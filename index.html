@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima da Cidade</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #86C7F3, #F7B7A3);
+            overflow: hidden;
+            animation: backgroundAnimation 15s infinite alternate;
+        }
+
+        @keyframes backgroundAnimation {
+            0% { background: #192cdb; }
+            100% { background: #eb92c6; }
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+            transition: transform 0.3s;
+        }
+
+        .container:hover {
+            transform: scale(1.05);
+        }
+
+        h1 {
+            color: #000000;
+            font-size: 2.5em;
+            animation: fadeIn 1s;
+        }
+
+        input {
+            padding: 12px;
+            margin-right: 10px;
+            width: 200px;
+            border: 2px solid #21375c;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #6a11cb;
+        }
+
+        button {
+            padding: 12px;
+            cursor: pointer;
+            background-color: black; 
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #333; 
+            transform: scale(1.1); 
+        }
+
+        #weatherInfo {
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        img {
+            margin-top: 10px;
+            width: 100px; 
+        }
+
+        
+        .cloud {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: drift 15s linear infinite;
+        }
+
+        .cloud1 {
+            width: 100px;
+            height: 60px;
+            top: 20%;
+            left: -10%;
+            animation-duration: 18s;
+        }
+
+        .cloud2 {
+            width: 80px;
+            height: 50px;
+            top: 30%;
+            left: 50%;
+            animation-duration: 20s;
+        }
+
+        .cloud3 {
+            width: 120px;
+            height: 70px;
+            top: 10%;
+            left: 70%;
+            animation-duration: 22s;
+        }
+
+        @keyframes drift {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(100vw); }
+        }
+
+        
+        .raindrop {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Buscador de Clima</h1>
+        <input type="text" id="cityInput" placeholder="Digite o nome da cidade">
+        <button id="searchButton">Buscar</button>
+        <div id="weatherInfo"></div>
+    </div>
+
+    
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
+
+    <script>
+        async function fetchWeather(city) {
+            const apiKey = '6567c91465e08b6cefbd59a3a937d601'; 
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=pt`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Cidade não encontrada');
+                }
+                const data = await response.json();
+                displayWeather(data);
+            } catch (error) {
+                document.getElementById('weatherInfo').innerText = error.message;
+            }
+        }
+
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const city = document.getElementById('cityInput').value.trim();
+            fetchWeather(city);
+        });
+
+        document.getElementById('cityInput').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                const city = document.getElementById('cityInput').value.trim();
+                fetchWeather(city);
+            }
+        });
+
+        function displayWeather(data) {
+            const weatherInfo = `
+                <h2 style="color: #2575fc;">${data.name}</h2>
+                <p>Temperatura: ${data.main.temp}°C</p>
+                <p>Condição: ${data.weather[0].description}</p>
+                <img src="http://openweathermap.org/img/wn/${data.weather[0].icon}.png" alt="Ícone do clima">
+            `;
+            document.getElementById('weatherInfo').innerHTML = weatherInfo;
+        }
+
+        
+        function createRaindrop() {
+            const drop = document.createElement('div');
+            drop.classList.add('raindrop');
+            drop.style.width = `${Math.random() * 5 + 2}px`;
+            drop.style.height = `${Math.random() * 10 + 10}px`;
+            drop.style.left = `${Math.random() * 100}vw`;
+            drop.style.animationDuration = `${Math.random() * 1 + 0.5}s`;
+            document.body.appendChild(drop);
+
+            drop.addEventListener('animationend', () => {
+                drop.remove();
+            });
+        }
+
+        
+        setInterval(createRaindrop, 200);
+    </script>
+</body>
+</html>
